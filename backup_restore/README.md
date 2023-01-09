@@ -1,0 +1,2 @@
+# Backup Restore
+Honestly the hardest part on this one is getting postgres to work. The second hardest is figuring out what the bytes were supposed to be. You could use the linux `file` command. In the script I used python's `magic` module.

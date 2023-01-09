@@ -36,55 +36,32 @@ print(
 db_name = "hackattic"
 db_user = "ha"
 user_passwd = "passwd"
+
+# Everything that follows assumes you have psql installed and the postgres service is running. You also need to either
+# create the user defined above manually in psql or put the credentials to the postgresql database in env vars in the
+# .env file (not in the repo ofc), as we need access to the database to create a new user
+
+# the following 3 commands are separate because the create database one can't be chained to others (apparently)
+boilerplate = [
+    "psql",
+    "-d",
+    f"{db_name}",
+    "-h",
+    "localhost",
+    "-p",
+    "5432",
+]
+subprocess.run(boilerplate + ["-c", f"CREATE DATABASE {db_name}"])
 subprocess.run(
-    [
-        "psql",
-        "-c",
-        f"CREATE DATABASE {db_name}",
-    ]
+    boilerplate + ["-c", f"CREATE USER {db_user} WITH PASSWORD {user_passwd}"]
 )
 subprocess.run(
-    [
-        "psql",
-        "-c",
-        f"CREATE USER {db_user} WITH PASSWORD '{user_passwd}'",
-    ]
+    boilerplate + ["-c", f"GRANT CONNECT ON DATABASE {db_name} TO {db_user}"]
 )
 subprocess.run(
-    [
-        "psql",
-        "-c",
-        f"GRANT CONNECT ON DATABASE {db_name} TO {db_user}",
-    ]
+    boilerplate + [f"{db_user}", "-c", "DROP TABLE IF EXISTS criminal_records"]
 )
-subprocess.run(
-    [
-        "psql",
-        "-d",
-        f"{db_name}",
-        "-h",
-        "localhost",
-        "-p",
-        "5432",
-        "-c",
-        "DROP TABLE IF EXISTS criminal_records",
-        f"{db_user}",
-    ]
-)
-subprocess.run(
-    [
-        "psql",
-        "-d",
-        f"{db_name}",
-        "-h",
-        "localhost",
-        "-p",
-        "5432",
-        "-f",
-        "what_is_this_v2",
-        f"{db_user}",
-    ]
-)
+subprocess.run(boilerplate + [f"{db_user}", "-f", "what_is_this_v2"])
 
 
 conn = psycopg2.connect(
